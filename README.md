@@ -1,10 +1,25 @@
 # Cthulhu Roller
 
-## Call of Cthulhu 7E dice roller bot for Discord
+**Cthulhu Roller** is a Call of Cthulhu RPG 7E dice roller bot for Discord.
+
+## Installation
+
+<https://github.com/pyenv/pyenv>
+
+<https://github.com/python-poetry/poetry>
+
+```bash
+curl https://pyenv.run | bash
+pyenv install 3.11
+pyenv local 3.11
+pip install poetry
+poetry env use 3.11
+poetry install
+source .env
+poetry run python cthulhu_roller.py
+```
 
 ## Usage
-
-A Call of Cthulhu dice roller bot for Discord.
 
 Created for simplicity. Rolls a d100 with optional bonus or penalty dice, and optional threshold for determining levels of success or failure.
 
@@ -32,8 +47,4 @@ Examples:
 
 ## Notes
 
-Needs environmental variable DISCORD_TOKEN to be set if you want to run this yourself. See `set_env.sh.example` for a Linux/OSX method.
-
-Using py-cord v2 library.
-
-Please open an issue for any bugs or feature requests.
+Needs environmental variable DISCORD_TOKEN to be set if you want to run this yourself. See `.env.example` for a Linux/OSX method.

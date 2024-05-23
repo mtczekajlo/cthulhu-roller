@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "Cthulhu Roller"
+version = "0.1.0"
+description = "A Call of Cthulhu 7E dice roller bot for Discord."
+authors = ["Marcin Czekajło <mtczekajlo@gmail.com>", "Thom Cuddihy"]
+license = "MIT"
+readme = "README.md"
+repository = "https://gitlab.com/mtczekajlo/cthulhu-roller"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+py-cord = "^2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
