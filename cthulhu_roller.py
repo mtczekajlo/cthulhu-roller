@@ -187,6 +187,9 @@ async def cthulhu_roll(
         em.description = None
         await ctx.respond(embed=em)
 
+def main():
+    token = environ["DISCORD_TOKEN"]
+    bot.run(token)
 
-token = environ["DISCORD_TOKEN"]
-bot.run(token)
+if __name__ == "__main__":
+    main()

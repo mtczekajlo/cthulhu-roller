@@ -4,6 +4,8 @@
 
 ## Installation
 
+Needs environment variable `DISCORD_TOKEN` to be set.
+
 <https://github.com/pyenv/pyenv>
 
 <https://github.com/python-poetry/poetry>
@@ -17,6 +19,18 @@ poetry env use 3.11
 poetry install
 source .env
 poetry run python cthulhu_roller.py
+```
+
+### Systemd installation
+
+```bash
+sudo apt install -y libsystemd-dev
+poetry install
+source .env
+poetry run install-service --token "${DISCORD_TOKEN}" --service-path "$(poetry run which run-service)"
+sudo systemctl daemon-reload
+sudo systemctl enable cthulhu-roller
+sudo systemctl start cthulhu-roller
 ```
 
 ## Usage
@@ -44,7 +58,3 @@ Examples:
     /croll 2p70t
     Failure: 0/50/70 + 4 = 74
 ```
-
-## Notes
-
-Needs environmental variable DISCORD_TOKEN to be set if you want to run this yourself. See `.env.example` for a Linux/OSX method.

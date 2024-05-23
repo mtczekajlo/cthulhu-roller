@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "Cthulhu Roller"
+name = "cthulhu-roller"
 version = "0.1.0"
 description = "A Call of Cthulhu 7E dice roller bot for Discord."
 authors = ["Marcin Czekajło <mtczekajlo@gmail.com>", "Thom Cuddihy"]
@@ -11,6 +11,12 @@ repository = "https://gitlab.com/mtczekajlo/cthulhu-roller"
 python = "^3.11"
 py-cord = "^2.0"
 
+systemd-python = "^235"
+argparse = "^1.4.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+run-service = "service:run"
+install-service = "service:install"
