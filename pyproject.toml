@@ -10,9 +10,8 @@ repository = "https://gitlab.com/mtczekajlo/cthulhu-roller"
 [tool.poetry.dependencies]
 python = "^3.11"
 py-cord = "^2.0"
-
-systemd-python = "^235"
 argparse = "^1.4.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

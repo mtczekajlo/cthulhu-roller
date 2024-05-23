@@ -355,16 +355,6 @@ speed = ["aiohttp[speedups]", "msgspec (>=0.18.6,<0.19.0)"]
 voice = ["PyNaCl (>=1.3.0,<1.6)"]
 
 [[package]]
-name = "systemd-python"
-version = "235"
-description = "Python interface for libsystemd"
-optional = false
-python-versions = "*"
-files = [
-    {file = "systemd-python-235.tar.gz", hash = "sha256:4e57f39797fd5d9e2d22b8806a252d7c0106c936039d1e71c8c6b8008e695c0a"},
-]
-
-[[package]]
 name = "yarl"
 version = "1.9.4"
 description = "Yet another URL library"
@@ -470,4 +460,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "52cb39eae964a60963eacf4388a37793f1b1d258edcd04fe149fb350c1baa953"
+content-hash = "6147a47f270f57a34c30cc49001656fd589609d905bbf025e98606157ecd0af1"
