@@ -1,8 +1,6 @@
-# Dorian
+# Cthulhu Roller
 
 ## Call of Cthulhu 7E dice roller bot for Discord
-
-[Discord Bot entry.](https://top.gg/bot/698078321472176200)
 
 ## Usage
 
@@ -34,7 +32,7 @@ Examples:
 
 ## Notes
 
-Needs environmental variable DORIAN_TOKEN to be set if you want to run this yourself. See `set_env.sh.example` for a Linux/OSX method.
+Needs environmental variable DISCORD_TOKEN to be set if you want to run this yourself. See `set_env.sh.example` for a Linux/OSX method.
 
 Using py-cord v2 library.
 
