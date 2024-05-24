@@ -17,10 +17,11 @@ COL_EXTR_SUCCESS = 0x8FB996
 COL_CRIT_SUCCESS = 0xB3CBB9
 
 
-class DiceResult:
+class RollResult:
     def __init__(self):
         self.title = ""
         self.desc = ""
+        self.foot = ""
         self.colour = 0x000000
 
 
@@ -29,15 +30,21 @@ def RollDie(min=0, max=9):
     return result
 
 
-def ResolveDice(BonusDie, PenaltyDie, Threshold, DiceString):
+def tens_as_str(i: int) -> str:
+    if i == 0:
+        return "00"
+    return str(i * 10)
+
+
+def ResolveDice(BonusDie, PenaltyDie, Threshold):
     TenResultPool = []
     TenResultPool.append(RollDie())
 
     TenResult = min(TenResultPool)
     OneResult = RollDie()
 
-    if BonusDie > 0 and PenaltyDie > 0:
-        return "Can't chain bonus and penalty dice"
+    if BonusDie and PenaltyDie:
+        return "Can't chain bonus and penalty dice."
 
     for i in range(BonusDie):
         TenResultPool.append(RollDie())
@@ -47,32 +54,44 @@ def ResolveDice(BonusDie, PenaltyDie, Threshold, DiceString):
         TenResultPool.append(RollDie())
         TenResult = max(TenResultPool)
 
+    TenResultPool.sort(reverse=True)
+
     if TenResult == 0 and OneResult == 0:
         CombinedResult = 100
     else:
         CombinedResult = TenResult * 10 + OneResult
 
-    ret = DiceResult()
-    ret.desc = f"""
-Roll: {DiceString}
-Result: {str(TenResult*10)} ({'/'.join([str(i*10) for i in TenResultPool])}) + {str(OneResult)} = {str(CombinedResult)}
-"""
+    ret = RollResult()
+
+    ret.desc = f"Result: **{str(CombinedResult)}**"
+
+    if Threshold:
+        HardThreshold = Threshold // 2
+        ExtremeThreshold = Threshold // 5
+        ret.foot = f"""{ret.foot}
+Threshold: {Threshold}/{HardThreshold}/{ExtremeThreshold}"""
+    if BonusDie:
+        ret.foot = f"""{ret.foot}
+Bonus dice: {BonusDie}"""
+    if PenaltyDie:
+        ret.foot = f"""{ret.foot}
+Penalty dice: {PenaltyDie}"""
 
     if CombinedResult == 1:
-        ret.title = "Critical Success!"
+        ret.title = "CRITICAL SUCCESS!"
         ret.colour = COL_CRIT_SUCCESS
     elif CombinedResult == 100:
-        ret.title = "Critical Failure!"
+        ret.title = "CRITICAL FAILURE!"
         ret.colour = COL_CRIT_FAILURE
     elif Threshold:
         if CombinedResult >= 96 and Threshold < 50:
-            ret.title = "Critical Failure!"
+            ret.title = "CRITICAL FAILURE!"
             ret.colour = COL_CRIT_FAILURE
-        elif CombinedResult <= Threshold / 5:
-            ret.title = "Extreme Success!"
+        elif CombinedResult <= ExtremeThreshold:
+            ret.title = "Extreme Success! (1/5)"
             ret.colour = COL_EXTR_SUCCESS
-        elif CombinedResult <= Threshold / 2:
-            ret.title = "Hard Success!"
+        elif CombinedResult <= HardThreshold:
+            ret.title = "Hard Success! (1/2)"
             ret.colour = COL_HARD_SUCCESS
         elif CombinedResult <= Threshold:
             ret.title = "Success"
@@ -80,6 +99,9 @@ Result: {str(TenResult*10)} ({'/'.join([str(i*10) for i in TenResultPool])}) + {
         else:
             ret.title = "Failure"
             ret.colour = COL_NORM_FAILURE
+
+    ret.foot = f"""{ret.foot}
+Rolls: {" ".join([f"[ {tens_as_str(r)} ]" for r in TenResultPool])} [ {OneResult} ]"""
 
     return ret
 
@@ -89,23 +111,45 @@ def parseRoll(diceString):
 ```
 /croll [[number=1][die type]]...[[score][threshold]]
 
-Die Types:
-    b: Bonus dice (can't be chained with Penalty)
-    p: Penalty dice (can't be chained with Bonus)
-    t: Threshold to determine success/fail. Score is required if a threshold is set.
+Test roll:
+    <number>t  Threshold to determine success or failure
+    <number>b  Bonus dice
+    <number>p  Penalty dice
+Die roll:
+    <number>d/k<number>+/-<number>  Custom dice with optional modifier
 
 Examples:
     /croll
-    36
+    Result: 36
+    Rolls: [ 30 ] [ 6 ]
 
     /croll 60t
-    Hard Success: 24
+    Hard Success! (1/2)
+    Result: 24
+    Threshold: 60/30/12
+    Rolls: [ 20 ] [ 4 ]
 
     /croll b
-    70/30 + 5 = 35
+    Result: 35
+    Bonus dice: 1
+    Rolls: [ 70 ] [ 30 ] [ 5 ]
 
     /croll 2p70t
-    Failure: 0/50/70 + 4 = 74
+    Failure
+    Result: 74
+    Threshold: 70/35/14
+    Penalty dice: 2
+    Rolls: [ 70 ] [ 50 ] [ 00 ] [ 4 ]
+
+    /croll d10
+    Result: 8
+    Rolling 1d10
+    Rolls: [ 8 ]
+
+    /croll 2k6+2
+    Result: 9
+    Rolling 2d6+2
+    Rolls: [ 5 ] [ 2 ]
 ```
 """
     fail = (
@@ -118,52 +162,68 @@ Unable to parse dice command. Usage:
     if diceString == "help":
         return help
 
-    dice = [x for x in re.split("(\d*?[bpt])", diceString) if x]
+    diceString = diceString.replace(" ", "")
 
-    if len(dice) > 1 and "b" in diceString and "p" in diceString:
-        return "Can't chain bonus and penalty dice"
+    pattern = r"((\d+)?[dk]\d+)?([+-]\d+)?|(\d+?t)?|(\d+?[bp])?"
+    matches = re.split(pattern, diceString)
+    matches = [m for m in matches if m]
 
-    BonusDie = 0
-    PenaltyDie = 0
-    Threshold = False
+    dice = None
+    sides = None
+    threshold = None
+    modifier = 0
+    bonus = 0
+    penalty = 0
 
-    for die in dice:
-        default_num = False
-        s = re.search("(\d*?)([bpt])", die)
-        if not s:
-            default_num = True
-            die = "1" + die
-        s = re.search("(\d*?)([bpt])", die)
-        if not s:
-            return fail
-        g = s.groups()
-        if len(g) != 2:
-            return fail
-        try:
-            num = int(g[0])
-        except Exception as e:
-            print(e)
-            default_num = True
-            num = 1
+    try:
+        for match in matches:
+            if any(c in match for c in ["d", "k"]):
+                if "d" in match:
+                    delimiter = "d"
+                else:
+                    delimiter = "k"
+                dice, sides = list(map(lambda x: int(x or 1), match.split(delimiter)))
+            elif any(c in match for c in ["+", "-"]):
+                modifier = int(match)
+            elif "t" in match:
+                threshold = int(match.replace("t", ""))
+            elif "b" in match:
+                bonus, _ = list(map(lambda x: int(x or bonus + 1), match.split("b")))
+            elif "p" in match:
+                penalty, _ = list(
+                    map(lambda x: int(x or penalty + 1), match.split("p"))
+                )
+    except Exception as e:
+        print(e)
+        return fail
 
-        dieCode = g[1]
+    if dice and (threshold or penalty or bonus):
+        return fail
 
-        if len(dieCode) > 1:
-            return fail
+    ret = RollResult()
 
-        if dieCode == "b":
-            BonusDie = num
+    if dice:
+        ret.foot = f"Rolling {dice}d{sides}"
+        if modifier:
+            ret.foot = f"{ret.foot}{modifier:+}"
+        rolls = [RollDie(1, int(sides)) for _ in range(int(dice))]
+        ret.foot = f"""{ret.foot}
+Rolls: {" ".join([f"[ {r} ]" for r in rolls])}"""
+        total = sum(rolls) + modifier
+        ret.desc = f"Result: **{str(total)}**"
+    else:
+        if bonus > penalty:
+            bonus -= penalty
+            penalty = 0
+        elif penalty > bonus:
+            penalty -= bonus
+            bonus = 0
+        else:
+            bonus = 0
+            penalty = 0
+        ret = ResolveDice(bonus, penalty, threshold)
 
-        if dieCode == "p":
-            PenaltyDie = num
-
-        if dieCode == "t":
-            if default_num:
-                return "Threshold requires a value!"
-            else:
-                Threshold = num
-
-    return ResolveDice(BonusDie, PenaltyDie, Threshold, diceString)
+    return ret
 
 
 @bot.slash_command(name="croll")
@@ -183,13 +243,14 @@ async def cthulhu_roll(
         em = discord.Embed(
             title=result.title, description=result.desc, colour=result.colour
         )
-        em.set_footer(text=result.desc)
-        em.description = None
+        em.set_footer(text=result.foot)
         await ctx.respond(embed=em)
+
 
 def main():
     token = environ["DISCORD_TOKEN"]
     bot.run(token)
+
 
 if __name__ == "__main__":
     main()

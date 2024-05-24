@@ -25,12 +25,10 @@ poetry run python cthulhu_roller.py
 
 ```bash
 sudo apt install -y libsystemd-dev
-poetry install
-source .env
-poetry run install-service --token "${DISCORD_TOKEN}" --service-path "$(poetry run which run-service)"
-sudo systemctl daemon-reload
-sudo systemctl enable cthulhu-roller
-sudo systemctl start cthulhu-roller
+```
+
+```bash
+./install-service
 ```
 
 ## Usage

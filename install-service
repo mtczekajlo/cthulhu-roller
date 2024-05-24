@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -xEeuo pipefail
+
+poetry install
+source .env
+poetry run install-service --token "${DISCORD_TOKEN}" --service-path "$(poetry run which run-service)"
+sudo systemctl daemon-reload
+sudo systemctl enable cthulhu-roller
+sudo systemctl start cthulhu-roller
