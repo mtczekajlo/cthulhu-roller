@@ -70,6 +70,17 @@ def ResolveDice(BonusDie, PenaltyDie, Threshold):
         ExtremeThreshold = Threshold // 5
         ret.foot = f"""{ret.foot}
 Threshold: {Threshold}/{HardThreshold}/{ExtremeThreshold}"""
+
+    if CombinedResult > Threshold:
+        ret.foot = f"""{ret.foot}
+{CombinedResult-Threshold} points to Success"""
+    elif CombinedResult > HardThreshold:
+        ret.foot = f"""{ret.foot}
+{CombinedResult-HardThreshold} points to Hard Success"""
+    elif CombinedResult > ExtremeThreshold:
+        ret.foot = f"""{ret.foot}
+{CombinedResult-ExtremeThreshold} points to Extreme Success"""
+
     if BonusDie:
         ret.foot = f"""{ret.foot}
 Bonus dice: {BonusDie}"""
