@@ -21,7 +21,7 @@ class DiceResult:
     def __init__(self):
         self.title = ""
         self.desc = ""
-        self.colour = COL_NORM_SUCCESS
+        self.colour = 0x000000
 
 
 def RollDie(min=0, max=9):

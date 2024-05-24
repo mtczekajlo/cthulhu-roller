@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cthulhu-roller"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Call of Cthulhu 7E dice roller bot for Discord."
 authors = ["Marcin Czekajło <mtczekajlo@gmail.com>", "Thom Cuddihy"]
 license = "MIT"
